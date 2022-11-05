@@ -43,8 +43,8 @@ def index():
 def form():
     return render_template("form.html")
 
-@app.route("/login", methods = ['POST', 'GET'])
-def login():
+@app.route("/tweet", methods = ['POST', 'GET'])
+def tweet():
     if request.method == 'GET':
         return "Login via the login Form"
     if request.method == 'POST':
@@ -55,12 +55,9 @@ def login():
         if user_id == None:
             submit_query(f'''insert into user (ip) value ('{ip}')''')
             user_id = retrieve_query_single(f'''select uid from user where ip = {ip}''')
-        add_tweet = f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')'''
-        submit_query(add_tweet)
-        get_tweets = f'''select * from tweet order by date desc'''
-        tweets = retrieve_query(get_tweets)
-
-        return str(tweets)
+        submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
+        tweets = retrieve_query(f'''select * from tweet order by date desc''')
+        return render_template("form.html", tweets=tweets)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,23 @@
-<form action="/login" method = "POST">
+<form action="/tweet" method = "POST">
     <textarea name="tweet"></textarea>
     <p><input type = "submit" value = "Tweet" /></p>
  </form>
+
+ <table>
+    <thead>
+    <tr>
+        <th>User</th>
+        <th>post</th>
+        <th>date</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for row in tweets %} 
+            <tr>
+                <td>{{row[3]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}</td>
+            </tr>
+        {% endfor %}        
+    </tbody>
+</table>
