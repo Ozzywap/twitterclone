@@ -17,6 +17,24 @@ def submit_query(query):
     cnx.commit()
     cursor.close()
 
+def retrieve_query(query):
+    # helper function to establish connection and retrieve queries
+    cnx = mysql.connector.connect(user = 'root', database = 'twitter')
+    cursor = cnx.cursor(buffered=True)
+    cursor.execute(query)
+    data = cursor.fetchall()
+    cursor.close()
+    return data
+
+def retrieve_query_single(query):
+    # helper function to establish connection and retrieve queries
+    cnx = mysql.connector.connect(user = 'root', database = 'twitter')
+    cursor = cnx.cursor(buffered=True)
+    cursor.execute(query)
+    data = cursor.fetchone()
+    cursor.close()
+    return data[0]
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -32,9 +50,17 @@ def login():
     if request.method == 'POST':
         tweet = request.form['tweet']
         ip = request.environ['REMOTE_ADDR']
-        query = f'''insert into tweet(ip, post) values ('{ip}', '{tweet}')'''
-        submit_query(query)
-        return render_template("form.html")
+        
+        user_id = retrieve_query_single(f'''select uid from user where ip = "{ip}"''')
+        if user_id == None:
+            submit_query(f'''insert into user (ip) value ('{ip}')''')
+            user_id = retrieve_query_single(f'''select uid from user where ip = {ip}''')
+        add_tweet = f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')'''
+        submit_query(add_tweet)
+        get_tweets = f'''select * from tweet order by date desc'''
+        tweets = retrieve_query(get_tweets)
+
+        return str(tweets)
 
 
 if __name__ == '__main__':
