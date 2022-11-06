@@ -33,6 +33,8 @@ def retrieve_query_single(query):
     cursor.execute(query)
     data = cursor.fetchone()
     cursor.close()
+    if data == None:
+        return None
     return data[0]
 
 def get_uid():
@@ -54,12 +56,15 @@ def form():
 @app.route("/tweet", methods = ['POST', 'GET'])
 def tweet():
     if request.method == 'GET':
-        follow = request.args['follow']
-        user_id= get_uid()
-        submit_query(f'''insert into follows(uid,follower) values ({user_id}, {follow}) ''')
-
-        tweets = retrieve_query(f'''select * from tweet order by date desc''')
-        return render_template("form.html", tweets=tweets)
+        follow_id = request.args['follow']
+        tweets = retrieve_query('''select * from tweet order by date desc''')
+        user_id = get_uid()
+        following = retrieve_query_single(f'''select follower from follows where uid = {user_id} and follower = {follow_id}''')
+        if following == None:
+            submit_query(f'''insert into follows(uid,follower) values ({user_id}, {follow_id}) ''')
+        followed = 'Following'
+        return render_template("form.html", tweets=tweets, followed=followed)
+        
     if request.method == 'POST':
         tweet = request.form['tweet']
         
@@ -67,7 +72,7 @@ def tweet():
         submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
         tweets = retrieve_query(f'''select * from tweet order by date desc''')
 
-        return render_template("form.html", tweets=tweets)
+        return render_template("form.html", tweets=tweets, followed='Follow')
 
 
 if __name__ == '__main__':

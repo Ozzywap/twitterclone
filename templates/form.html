@@ -20,9 +20,7 @@
                 <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
                 <td>
-                <form action="/tweet" method = "GET">
-                    <p><button type="submit" name="follow", value="{{ row [3] }}">Follow</button></p>
-                 </form>
+                    <a href="/tweet?follow={{ row [3] }}">{{followed}}</a>
                 </td>
             </tr>
         {% endfor %}        
