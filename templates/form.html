@@ -7,8 +7,10 @@
     <thead>
     <tr>
         <th>User</th>
-        <th>post</th>
-        <th>date</th>
+        <th>Post</th>
+        <th>Date</th>
+        <th>Follow</th>
+
     </tr>
     </thead>
     <tbody>
@@ -17,6 +19,11 @@
                 <td>{{row[3]}}</td>
                 <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
+                <td>
+                <form action="/tweet" method = "GET">
+                    <p><button type="submit" name="follow", value="{{ row [3] }}">Follow</button></p>
+                 </form>
+                </td>
             </tr>
         {% endfor %}        
     </tbody>

@@ -35,6 +35,14 @@ def retrieve_query_single(query):
     cursor.close()
     return data[0]
 
+def get_uid():
+    ip = request.environ['REMOTE_ADDR']
+    user_id = retrieve_query_single(f'''select uid from user where ip = "{ip}"''')
+    if user_id == None:
+        submit_query(f'''insert into user (ip) value ('{ip}')''')
+        user_id = retrieve_query_single(f'''select uid from user where ip = {ip}''')
+    return user_id
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -46,17 +54,19 @@ def form():
 @app.route("/tweet", methods = ['POST', 'GET'])
 def tweet():
     if request.method == 'GET':
-        return "Login via the login Form"
+        follow = request.args['follow']
+        user_id= get_uid()
+        submit_query(f'''insert into follows(uid,follower) values ({user_id}, {follow}) ''')
+
+        tweets = retrieve_query(f'''select * from tweet order by date desc''')
+        return render_template("form.html", tweets=tweets)
     if request.method == 'POST':
         tweet = request.form['tweet']
-        ip = request.environ['REMOTE_ADDR']
         
-        user_id = retrieve_query_single(f'''select uid from user where ip = "{ip}"''')
-        if user_id == None:
-            submit_query(f'''insert into user (ip) value ('{ip}')''')
-            user_id = retrieve_query_single(f'''select uid from user where ip = {ip}''')
+        user_id= get_uid()
         submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
         tweets = retrieve_query(f'''select * from tweet order by date desc''')
+
         return render_template("form.html", tweets=tweets)
 
 
