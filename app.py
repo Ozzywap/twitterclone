@@ -51,7 +51,8 @@ def index():
 
 @app.route("/form")
 def form():
-    return render_template("form.html")
+    tweets = retrieve_query(f'''select * from tweet order by date desc''')
+    return render_template("form.html", tweets=tweets, follow_status=None)
 
 @app.route("/tweet", methods = ['POST', 'GET'])
 def tweet():
@@ -60,10 +61,11 @@ def tweet():
         tweets = retrieve_query('''select * from tweet order by date desc''')
         user_id = get_uid()
         following = retrieve_query_single(f'''select follower from follows where uid = {user_id} and follower = {follow_id}''')
+        follow_status = 'Following'
         if following == None:
             submit_query(f'''insert into follows(uid,follower) values ({user_id}, {follow_id}) ''')
-        followed = 'Following'
-        return render_template("form.html", tweets=tweets, followed=followed)
+            follow_status = 'Following'
+        return render_template("form.html", tweets=tweets, follow_status=follow_status)
         
     if request.method == 'POST':
         tweet = request.form['tweet']
@@ -72,7 +74,7 @@ def tweet():
         submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
         tweets = retrieve_query(f'''select * from tweet order by date desc''')
 
-        return render_template("form.html", tweets=tweets, followed='Follow')
+        return render_template("form.html", tweets=tweets, follow_status='Follow')
 
 
 if __name__ == '__main__':

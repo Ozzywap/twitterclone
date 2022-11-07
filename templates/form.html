@@ -20,7 +20,7 @@
                 <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
                 <td>
-                    <a href="/tweet?follow={{ row [3] }}">{{followed}}</a>
+                    <a href="/tweet?follow={{ row [3] }}">{{ follow_status if follow_status is not none else 'Follow' }}</a>
                 </td>
             </tr>
         {% endfor %}        
