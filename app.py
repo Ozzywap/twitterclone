@@ -45,36 +45,51 @@ def get_uid():
         user_id = retrieve_query_single(f'''select uid from user where ip = {ip}''')
     return user_id
 
+def follow_status():
+    tweets = retrieve_query(f'''select * from tweet order by date desc''')
+    tweet_status = []
+    # id_checked = []
+    for i in tweets:
+    # if i[3] not in id_checked:
+        if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
+            tweet_status.append((i[3], i[1], i[2],'Follow'))
+        else:
+            tweet_status.append((i[3], i[1], i[2], 'Following'))
+    # id_checked.append(i[3])
+    return tweet_status
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
 @app.route("/form")
 def form():
-    tweets = retrieve_query(f'''select * from tweet order by date desc''')
-    return render_template("form.html", tweets=tweets, follow_status=None)
+    tweet_status = follow_status()
+    return render_template("form.html", tweet_status=tweet_status)
+
 
 @app.route("/tweet", methods = ['POST', 'GET'])
 def tweet():
     if request.method == 'GET':
         follow_id = request.args['follow']
-        tweets = retrieve_query('''select * from tweet order by date desc''')
+
         user_id = get_uid()
-        following = retrieve_query_single(f'''select follower from follows where uid = {user_id} and follower = {follow_id}''')
-        follow_status = 'Following'
+        following = retrieve_query_single(f'''select follower from follows where uid = {follow_id} and follower = {user_id}''')
         if following == None:
-            submit_query(f'''insert into follows(uid,follower) values ({user_id}, {follow_id}) ''')
-            follow_status = 'Following'
-        return render_template("form.html", tweets=tweets, follow_status=follow_status)
+            submit_query(f'''insert into follows(uid,follower) values ({follow_id}, {user_id}) ''')
+        
+        tweet_status = follow_status()
+        return render_template("form.html", tweet_status=tweet_status)
         
     if request.method == 'POST':
         tweet = request.form['tweet']
         
         user_id= get_uid()
         submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
-        tweets = retrieve_query(f'''select * from tweet order by date desc''')
-
-        return render_template("form.html", tweets=tweets, follow_status='Follow')
+        
+        tweet_status = follow_status()
+                
+        return render_template("form.html", tweet_status=tweet_status)
 
 
 if __name__ == '__main__':
