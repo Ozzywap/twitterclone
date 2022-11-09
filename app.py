@@ -68,7 +68,7 @@ def render_tweets_followers():
         if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
             tweet_status.append((i[3], i[1], i[2],'Follow'))
         else:
-            tweet_status.append((i[3], i[1], i[2], 'Following'))
+            tweet_status.append((i[3], i[1], i[2], 'Unfollow'))
     # id_checked.append(i[3])
     return tweet_status
 
@@ -86,12 +86,16 @@ def form():
 @app.route("/tweet", methods = ['POST', 'GET'])
 def tweet():
     if request.method == 'GET':
-        follow_id = request.args['follow']
+        follow_id = request.args.get('follow')
+        unfollow_id = request.args.get('unfollow')
 
         user_id = get_uid()
-        following = retrieve_query_single(f'''select follower from follows where uid = {follow_id} and follower = {user_id}''')
-        if following == None:
-            submit_query(f'''insert into follows(uid,follower) values ({follow_id}, {user_id}) ''')
+        if unfollow_id == None:
+            following = retrieve_query_single(f'''select follower from follows where uid = {follow_id} and follower = {user_id}''')
+            if following == None:
+                submit_query(f'''insert into follows(uid,follower) values ({follow_id}, {user_id}) ''')
+        else:
+            submit_query(f'''delete from follows where uid = {unfollow_id} and follower = {user_id}''')
         
         tweet_status = render_tweets()
         follower_tweet_status = render_tweets_followers()
