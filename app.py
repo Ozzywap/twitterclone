@@ -95,18 +95,31 @@ def form():
     follower_tweet_status = render_tweets_followers()
     return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
 
-@app.route("/post", methods= ['GET'])
+@app.route("/post", methods= ['GET', 'POST'])
 def post():
-    
     return render_template("post.html")
 
-@app.route("/feed", methods= ['GET'])
-def feed():    
+@app.route("/feed", methods= ['GET', 'POST'])
+def feed(): 
+    user_id = get_uid()
+    try:
+        unfollow_id = request.args.get('unfollow')
+        submit_query(f'''delete from follows where uid = {unfollow_id} and follower = {user_id}''')
+    except Exception:
+        pass
     follower_tweet_status = render_tweets_followers()
     return render_template("feed.html", tweet_status=follower_tweet_status)
 
-@app.route("/explore", methods= ['GET'])
+@app.route("/explore", methods= ['GET', 'POST'])
 def explore():
+    user_id = get_uid()
+    try:
+        follow_id = request.args.get('follow')
+        following = retrieve_query_single(f'''select follower from follows where uid = {follow_id} and follower = {user_id}''')
+        if following == None:
+            submit_query(f'''insert into follows(uid,follower) values ({follow_id}, {user_id}) ''')
+    except Exception:
+        pass
     non_follower_tweet_status = render_tweets_non_followers()
     return render_template("explore.html", tweet_status=non_follower_tweet_status)
 
