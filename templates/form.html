@@ -26,3 +26,29 @@
         {% endfor %}        
     </tbody>
 </table>
+
+<hr>
+<h3>Followed users</h3>
+<table>
+    <thead>
+    <tr>
+        <th>User</th>
+        <th>Post</th>
+        <th>Date</th>
+        <th>Follow</th>
+
+    </tr>
+    </thead>
+    <tbody>
+        {% for row in follower_tweet_status %} 
+            <tr>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}</td>
+                <td>
+                    <a href="/tweet?follow={{ row [0] }}">{{row[3]}}</a>
+                </td>
+            </tr>
+        {% endfor %}        
+    </tbody>
+</table>

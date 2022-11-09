@@ -42,11 +42,25 @@ def get_uid():
     user_id = retrieve_query_single(f'''select uid from user where ip = "{ip}"''')
     if user_id == None:
         submit_query(f'''insert into user (ip) value ('{ip}')''')
-        user_id = retrieve_query_single(f'''select uid from user where ip = {ip}''')
+        user_id = retrieve_query_single(f'''select uid from user where ip = "{ip}"''')
     return user_id
 
-def follow_status():
+def render_tweets():
     tweets = retrieve_query(f'''select * from tweet order by date desc''')
+    tweet_status = []
+    # id_checked = []
+    for i in tweets:
+    # if i[3] not in id_checked:
+        if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
+            tweet_status.append((i[3], i[1], i[2],'Follow'))
+        else:
+            tweet_status.append((i[3], i[1], i[2], 'Following'))
+    # id_checked.append(i[3])
+    return tweet_status
+
+def render_tweets_followers():
+    user_id = get_uid()
+    tweets = retrieve_query(f'''select * from tweet where uid in (select uid from follows where follower = {user_id}) order by date desc''')
     tweet_status = []
     # id_checked = []
     for i in tweets:
@@ -64,8 +78,9 @@ def index():
 
 @app.route("/form")
 def form():
-    tweet_status = follow_status()
-    return render_template("form.html", tweet_status=tweet_status)
+    tweet_status = render_tweets()
+    follower_tweet_status = render_tweets_followers()
+    return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
 
 
 @app.route("/tweet", methods = ['POST', 'GET'])
@@ -78,8 +93,9 @@ def tweet():
         if following == None:
             submit_query(f'''insert into follows(uid,follower) values ({follow_id}, {user_id}) ''')
         
-        tweet_status = follow_status()
-        return render_template("form.html", tweet_status=tweet_status)
+        tweet_status = render_tweets()
+        follower_tweet_status = render_tweets_followers()
+        return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
         
     if request.method == 'POST':
         tweet = request.form['tweet']
@@ -87,9 +103,10 @@ def tweet():
         user_id= get_uid()
         submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
         
-        tweet_status = follow_status()
+        tweet_status = render_tweets()
+        follower_tweet_status = render_tweets_followers()
                 
-        return render_template("form.html", tweet_status=tweet_status)
+        return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
 
 
 if __name__ == '__main__':
