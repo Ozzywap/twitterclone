@@ -71,6 +71,19 @@ def render_tweets_followers():
             tweet_status.append((i[3], i[1], i[2], 'Unfollow'))
     # id_checked.append(i[3])
     return tweet_status
+def render_tweets_non_followers():
+    user_id = get_uid()
+    tweets = retrieve_query(f'''select * from tweet where uid not in (select uid from follows where follower = {user_id}) order by date desc''')
+    tweet_status = []
+    # id_checked = []
+    for i in tweets:
+    # if i[3] not in id_checked:
+        if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
+            tweet_status.append((i[3], i[1], i[2],'Follow'))
+        else:
+            tweet_status.append((i[3], i[1], i[2], 'Unfollow'))
+    # id_checked.append(i[3])
+    return tweet_status
 
 @app.route("/")
 def index():
@@ -82,6 +95,20 @@ def form():
     follower_tweet_status = render_tweets_followers()
     return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
 
+@app.route("/post", methods= ['GET'])
+def post():
+    
+    return render_template("post.html")
+
+@app.route("/feed", methods= ['GET'])
+def feed():    
+    follower_tweet_status = render_tweets_followers()
+    return render_template("feed.html", tweet_status=follower_tweet_status)
+
+@app.route("/explore", methods= ['GET'])
+def explore():
+    non_follower_tweet_status = render_tweets_non_followers()
+    return render_template("explore.html", tweet_status=non_follower_tweet_status)
 
 @app.route("/tweet", methods = ['POST', 'GET'])
 def tweet():
