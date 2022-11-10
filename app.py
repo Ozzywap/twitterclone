@@ -97,6 +97,13 @@ def form():
 
 @app.route("/post", methods= ['GET', 'POST'])
 def post():
+    user_id= get_uid()
+    try:
+        tweet = request.form.get('tweet')
+        submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
+    except Exception:
+        pass
+
     return render_template("post.html")
 
 @app.route("/feed", methods= ['GET', 'POST'])
