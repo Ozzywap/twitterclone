@@ -45,44 +45,34 @@ def get_uid():
         user_id = retrieve_query_single(f'''select uid from user where ip = "{ip}"''')
     return user_id
 
-def render_tweets():
-    tweets = retrieve_query(f'''select * from tweet order by date desc''')
+def render_tweets(tweets):
     tweet_status = []
-    # id_checked = []
+    id_checked = {}
     for i in tweets:
-    # if i[3] not in id_checked:
-        if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
-            tweet_status.append((i[3], i[1], i[2],'Follow'))
+        if i[3] not in id_checked.keys():
+            if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
+                tweet_status.append((i[3], i[1], i[2],'Follow'))
+                id_checked[i[3]] = 'Follow'
+            else:
+                tweet_status.append((i[3], i[1], i[2], 'Unfollow'))
+                id_checked[i[3]] = 'Unfollow'
         else:
-            tweet_status.append((i[3], i[1], i[2], 'Following'))
-    # id_checked.append(i[3])
+            status = id_checked[i[3]]
+            tweet_status.append((i[3], i[1], i[2],status))
     return tweet_status
 
 def render_tweets_followers():
     user_id = get_uid()
     tweets = retrieve_query(f'''select * from tweet where uid in (select uid from follows where follower = {user_id}) order by date desc''')
-    tweet_status = []
-    # id_checked = []
-    for i in tweets:
-    # if i[3] not in id_checked:
-        if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
-            tweet_status.append((i[3], i[1], i[2],'Follow'))
-        else:
-            tweet_status.append((i[3], i[1], i[2], 'Unfollow'))
-    # id_checked.append(i[3])
+    tweet_status = render_tweets(tweets)
+
     return tweet_status
+
 def render_tweets_non_followers():
     user_id = get_uid()
     tweets = retrieve_query(f'''select * from tweet where uid not in (select uid from follows where follower = {user_id}) order by date desc''')
-    tweet_status = []
-    # id_checked = []
-    for i in tweets:
-    # if i[3] not in id_checked:
-        if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
-            tweet_status.append((i[3], i[1], i[2],'Follow'))
-        else:
-            tweet_status.append((i[3], i[1], i[2], 'Unfollow'))
-    # id_checked.append(i[3])
+    tweet_status = render_tweets(tweets)
+
     return tweet_status
 
 @app.route("/")
