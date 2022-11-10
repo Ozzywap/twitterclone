@@ -79,15 +79,10 @@ def render_tweets_non_followers():
 def index():
     return render_template("index.html")
 
-@app.route("/form")
-def form():
-    tweet_status = render_tweets()
-    follower_tweet_status = render_tweets_followers()
-    return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
-
 @app.route("/post", methods= ['GET', 'POST'])
 def post():
     user_id= get_uid()
+    name = request.args.get('name', 'User')
     try:
         tweet = request.form.get('tweet')
         if tweet != None:
@@ -95,7 +90,7 @@ def post():
     except Exception:
         pass
 
-    return render_template("post.html")
+    return render_template("post.html", name=name)
 
 @app.route("/feed", methods= ['GET', 'POST'])
 def feed(): 
