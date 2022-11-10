@@ -121,35 +121,5 @@ def explore():
     non_follower_tweet_status = render_tweets_non_followers()
     return render_template("explore.html", tweet_status=non_follower_tweet_status)
 
-@app.route("/tweet", methods = ['POST', 'GET'])
-def tweet():
-    if request.method == 'GET':
-        follow_id = request.args.get('follow')
-        unfollow_id = request.args.get('unfollow')
-
-        user_id = get_uid()
-        if unfollow_id == None:
-            following = retrieve_query_single(f'''select follower from follows where uid = {follow_id} and follower = {user_id}''')
-            if following == None:
-                submit_query(f'''insert into follows(uid,follower) values ({follow_id}, {user_id}) ''')
-        else:
-            submit_query(f'''delete from follows where uid = {unfollow_id} and follower = {user_id}''')
-        
-        tweet_status = render_tweets()
-        follower_tweet_status = render_tweets_followers()
-        return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
-        
-    if request.method == 'POST':
-        tweet = request.form['tweet']
-        
-        user_id= get_uid()
-        submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
-        
-        tweet_status = render_tweets()
-        follower_tweet_status = render_tweets_followers()
-                
-        return render_template("form.html", tweet_status=tweet_status, follower_tweet_status=follower_tweet_status)
-
-
 if __name__ == '__main__':
     app.run(debug=True)
