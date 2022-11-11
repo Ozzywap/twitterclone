@@ -49,7 +49,7 @@ def render_tweets(tweets):
     tweet_status = []
     id_checked = {}
     for i in tweets:
-        if i[3] not in id_checked.keys():
+        if i[3] not in id_checked:
             if retrieve_query_single(f'''select follower from follows where uid = {i[3]} and follower = {get_uid()}''') == None:
                 tweet_status.append((i[3], i[1], i[2],'Follow'))
                 id_checked[i[3]] = 'Follow'
@@ -76,8 +76,17 @@ def render_tweets_non_followers():
     return tweet_status
 
 @app.route("/")
-def index():
+def login():
     return render_template("index.html")
+
+@app.route("/", methods = ['GET', 'POST'])
+def index():
+    name = request.form.get('name')
+    password = request.form.get('password')
+    if name == 'root' and password == 'root':
+        return render_template("feed.html", tweet_status=render_tweets_followers())
+    else:
+        return 'incorrect username or password'
 
 @app.route("/post", methods= ['GET', 'POST'])
 def post():
@@ -86,7 +95,7 @@ def post():
     try:
         tweet = request.form.get('tweet')
         if tweet != None:
-            submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet}')''')
+            submit_query(f'''insert into tweet(uid, post) values ('{user_id}', '{tweet[:128]}')''')
     except Exception:
         pass
 

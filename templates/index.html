@@ -20,8 +20,9 @@
     
     <div style="margin-left:15%">
     {% block body %}
-    <form action="/post" method="get">
+    <form action="/" method="post">
         <input autocomplete="off" autofocus name="name" placeholder="Name" type="text">
+        <input autocomplete="off" autofocus name="password" placeholder="password" type="text">
         <input type="submit">
     </form>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
